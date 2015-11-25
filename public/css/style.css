@@ -1,10 +1,26 @@
+body{
+    background: #000;
+}
 #editor {
-    position: absolute;
-    top: 2rem;
-    right: 0;
-    left: 0;
-    margin: auto;
     font-size: 1.2rem;
     height: 500px;
-    width: 60%;
+    width: 100%;
+}
+nav{
+    padding: 0 15px;
+}
+nav span{
+    padding: 0 15px;
+}
+#controls{
+    padding: 1rem;
+}
+#output{
+    padding-top: 20px;
+    word-wrap: break-word;
+    overflow-y: hidden;
+}
+.output-wrapper{
+    height: 100%;
+    width: 100%;
 }
