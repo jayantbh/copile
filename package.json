@@ -1,0 +1,20 @@
+{
+  "name": "copile",
+  "version": "0.0.1",
+  "description": "A basic online compiler. The name is not a typo.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "compiler",
+    "online",
+    "copile"
+  ],
+  "author": "Jayant Bhawal",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.3",
+    "socket.io": "^1.3.7"
+  }
+}

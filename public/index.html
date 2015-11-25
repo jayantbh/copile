@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CoPilot</title>
+
+    <link rel="stylesheet" href="css/style.css"/>
+
+    <script src="js/ace.js"></script>
+    <script src="js/mode-c_cpp.js"></script>
+    <script src="js/theme-monokai.js"></script>
+</head>
+<body>
+<div id="editor"></div>
+<button>SUBMIT!</button>
+<script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/monokai");
+    editor.getSession().setMode("ace/mode/c_cpp");
+</script>
+</body>
+</html>
