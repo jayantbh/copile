@@ -1,6 +1,6 @@
 {
   "name": "copile",
-  "version": "0.5",
+  "version": "0.6.0",
   "description": "A basic online compiler. The name is not a typo.",
   "main": "index.js",
   "scripts": {
