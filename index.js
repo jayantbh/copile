@@ -22,7 +22,7 @@ app.get("/", function (req, res) {
     var rs = randomstring(8);
     //console.log(rs);
     //res.send(rs);
-    res.redirect(307,"/"+rs);
+    res.redirect(307, "/" + rs);
 });
 app.get('/:room', function (req, res) {
     console.log('Page loaded with ID ' + roomId);
@@ -96,17 +96,23 @@ io.on('connection', function (socket) {
     socket.on('code submission', function (codejson) {
 
         var code = codejson.code;
-        var args = codejson.args;
-        var input = codejson.input;
+        var args = codejson.args.trim();
+        var input = codejson.input.trim();
+
+        args = (args.length > 0) ? " " + args : "";
+
         //console.log(code);
         var filename = new Date().getTime();
         var filename_ext = filename + ".c";
         var filename_out = filename;
         var path = "./compiled/" + filename_ext;
         var path_out = "./compiled/" + filename;
-        var inputFilePath = filename + ".txt";
+        var inputFilePath = path_out + ".txt";
         //var dexecCommand = "dexec -C ./compiled " + filename_ext + " < " + inputFilePath;
-        var localCommand = "gcc "+path+" -o "+path_out;
+        var localCommand = "gcc " + path + " -o " + path_out;
+
+        var inputCommand = (input.length > 0)?" < "+inputFilePath:"";
+        var localExec = path_out + args + inputCommand;
 
         //fs.writeFile(inputFilePath, input, function (err) {
         //    if (err) {
@@ -134,38 +140,42 @@ io.on('connection', function (socket) {
         //console.log(command);
 
         fs.writeFile(path, code, function (err) {
-            //var deferred = Q.defer();
             if (err) {
                 return console.log(err);
             }
             exec(localCommand, function (error, stdout, stderr) {
-                if(stderr){
+                if (stderr) {
                     console.error(stderr);
-                    io.to(roomId).emit("shell output",stderr);
+                    io.to(roomId).emit("shell output", stderr);
                 }
-                else if(error){
+                else if (error) {
                     console.error(error);
-                    io.to(roomId).emit("shell output","Compilation failed.\n");
+                    io.to(roomId).emit("shell output", "Compilation failed.\n");
                 }
-                else if (stdout){
+                else if (stdout) {
                     console.log(stdout);
-                    io.to(roomId).emit("shell output",stdout);
+                    io.to(roomId).emit("shell output", stdout);
                 }
-                else{
-                    exec(path_out, function (error, stdout, stderr) {
-                        if(stderr){
-                            console.error(stderr);
-                            io.to(roomId).emit("shell output",stderr);
+                else {
+                    fs.writeFile(inputFilePath, input, function (err) {
+                        if (err) {
+                            return console.log(err);
                         }
-                        else if(error){
-                            console.error(error);
-                            io.to(roomId).emit("shell output","Execution failed.");
-                        }
-                        else{
-                            //success
-                            console.log(stdout);
-                            io.to(roomId).emit("shell output",stdout);
-                        }
+                        exec(localExec, function (error, stdout, stderr) {
+                            if (stderr) {
+                                console.error(stderr);
+                                io.to(roomId).emit("shell output", stderr);
+                            }
+                            else if (error) {
+                                console.error(error);
+                                io.to(roomId).emit("shell output", "Execution failed.");
+                            }
+                            else {
+                                //success
+                                console.log(stdout);
+                                io.to(roomId).emit("shell output", stdout);
+                            }
+                        });
                     });
                 }
             });
