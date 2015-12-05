@@ -109,7 +109,7 @@ io.on('connection', function (socket) {
         var path_out = "./compiled/" + filename;
         var inputFilePath = path_out + ".txt";
         //var dexecCommand = "dexec -C ./compiled " + filename_ext + " < " + inputFilePath;
-        var localCommand = "gcc " + path + " -o " + path_out;
+        var localCommand = "gcc " + path + " -std=c99 -o " + path_out;
 
         var inputCommand = (input.length > 0)?" < "+inputFilePath:"";
         var localExec = path_out + args + inputCommand;
