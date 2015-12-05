@@ -7,12 +7,16 @@
     <link rel="stylesheet" href="css/reset.css"/>
     <link rel="stylesheet" href="css/style.css"/>
     <link rel="stylesheet" href="materialize/css/materialize.min.css"/>
+    <link rel="stylesheet" href="css/firepad.css" />
+    <link rel="icon" href="#"/>
 
+    <script src="js/firebase.js"></script>
     <script src="js/ace.js"></script>
     <script src="js/mode-c_cpp.js"></script>
     <script src="js/theme-monokai.js"></script>
     <script src="js/jquery.min.js"></script>
     <script src="materialize/js/materialize.min.js"></script>
+    <script src="js/firepad.min.js"></script>
 </head>
 <body>
 <nav class="indigo">
@@ -28,18 +32,63 @@
 <div id="editor"></div>
 <div id="controls" class="indigo">
     <div class="center">
-        <button id="submit" class="btn waves-effect waves-light white indigo-text">SUBMIT!</button>
+        <button data-target="args" id="cla" class="btn waves-effect waves-indigo white indigo-text modal-trigger">Args</button>
+        <button data-target="input" id="stdin" class="btn waves-effect waves-indigo white indigo-text modal-trigger">Input</button>
+    </div>
+    <div class="center">
+        <button id="submit" class="btn waves-effect waves-indigo white indigo-text">Please wait while the editor loads...</button>
     </div>
 </div>
 <div class="white-text">
     <div class="output-wrapper container">
-        <pre id="output"></pre>
+        <pre id="output">STDOUT goes here...</pre>
+    </div>
+</div>
+
+<!-- Modal Structure -->
+<div id="args" class="modal">
+    <div class="modal-content">
+        <h4>Arguments</h4>
+        <label for="args-list">Space separated arguments list.</label>
+        <input type="text" id="args-list" maxlength="500" length="500"/>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-action modal-close waves-effect waves-indigo btn-flat ">OK</a>
+        <a href="#!" class="waves-effect waves-indigo btn-flat " id="clear-args">CLEAR</a>
+    </div>
+</div>
+
+<div id="input" class="modal">
+    <div class="modal-content">
+        <h4>Inputs</h4>
+        <label for="input-text">Input data for the program.</label>
+        <textarea id="input-text" class="materialize-textarea" maxlength="2000" length="2000"></textarea>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-action modal-close waves-effect waves-indigo btn-flat ">OK</a>
+        <a href="#!" class="waves-effect waves-indigo btn-flat " id="clear-input">CLEAR</a>
     </div>
 </div>
 <script>
-    var editor = ace.edit("editor");
-    editor.setTheme("ace/theme/monokai");
-    editor.getSession().setMode("ace/mode/c_cpp");
+    function init() {
+        // Initialize Firebase.:
+        var firepadRef = new Firebase('https://copile.firebaseio.com'+location.pathname);
+        // Create ACE
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        var session = editor.getSession();
+        session.setUseWrapMode(true);
+        session.setUseWorker(false);
+        session.setMode("ace/mode/c_cpp");
+        // Create Firepad.
+        var firepad = Firepad.fromACE(firepadRef, editor, {
+            defaultText: "#include \<stdio.h\>\nint main\(\)\{\n\t\n\treturn 0;\n}"
+        });
+        firepad.on('ready', function() {
+            document.querySelector("#submit").innerText = "SUBMIT!";
+        });
+    }
+    window.onload = init;
 </script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/script.js"></script>
