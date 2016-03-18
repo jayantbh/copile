@@ -3,6 +3,7 @@
 A collaborative (not yet) code editor and online compiler.
 
 ToDo:
-1. Accept inputs.
-2. Accept CL args.
-3. Actually make it collaborative.
+
+[x] Accept inputs.
+[x] Accept CL args.
+[x] Actually make it collaborative.
