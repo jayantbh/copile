@@ -30,6 +30,7 @@ app.get('/:room', function (req, res) {
     if (req.params.room) {
         if (req.params.room != "favicon.ico") {
             roomId = req.params.room;
+            console.log("Room ID:",roomId);
         }
     }
 });
@@ -96,11 +97,16 @@ app.post('/code', function (req, res) {
 });
 
 io.on('connection', function (socket) {
-    console.log('a user connected');
+    console.log('a user connected on room: ',roomId);
 
     socket.join(roomId);
     socket.on('code submission', function (codejson) {
-
+        /**
+         * Step 1: Get data from client.
+         * Step 2: Write code to code file.
+         * Step 3: Compile/Dexec run code file.
+         * Step 4: If compiled, execute code file.
+         */
         var dir = "compiled";
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
@@ -109,6 +115,7 @@ io.on('connection', function (socket) {
         var code = codejson.code;
         var args = codejson.args.trim();
         var input = codejson.input.trim();
+        var roomId = codejson.roomId;
 
         args = (args.length > 0) ? " " + args : "";
 
@@ -116,39 +123,61 @@ io.on('connection', function (socket) {
         var filename = new Date().getTime();
         var filename_ext = filename + ".c";
         var filename_out = filename;
-        var path = "compiled/" + filename_ext;
+        var codePath = "compiled/" + filename_ext;
         var path_out = "compiled/" + filename;
         var inputFilePath = path_out + ".txt";
-        var dexecCommand = "dexec -C " + path + " < " + inputFilePath;
-        var localCommand = dexecCommand || "gcc " + path + " -std=c99 -o " + path_out;
+        var dexecCommand = "dexec -C compiled " + filename_ext + " < " + inputFilePath + " --build-arg=-std=c99";
+        var argsArray = args.split(" ");
+        argsArray.forEach(function (v, i) {
+            if(v && v.length){
+                dexecCommand += " -a "+v;
+            }
+        });
+
+        var compileCommand = "gcc " + codePath + " -std=c99 -o " + path_out;
+        if (dexecCommand) {
+            compileCommand = dexecCommand;
+        }
 
         var inputCommand = (input.length > 0) ? " < " + inputFilePath : "";
-        var localExec = path_out + args + inputCommand;
-        console.log("LE", localExec);
+        var executionCommand = path_out + args + inputCommand;
+        console.log("ToGo", compileCommand);
 
-        fs.writeFile(path, code, function (err) {
+        //Write Code File
+        fs.writeFile(codePath, code, function (err) {
             if (err) {
                 return console.log("Write err", err);
             }
-            exec(localCommand, function (error, stdout, stderr) {
-                if (stderr) {
-                    console.error("Command 1 stderr", stderr);
-                    io.to(roomId).emit("shell output", stderr);
+            //Write Input File
+            fs.writeFile(inputFilePath, input, function (err) {
+                if (err) {
+                    fs.unlink(codePath);
+                    return console.log("File Write 2 err", err);
                 }
-                else if (error) {
-                    console.error("Command 1 err", error);
-                    io.to(roomId).emit("shell output", "Compilation failed.\n");
-                }
-                else if (stdout) {
-                    console.log(stdout);
-                    io.to(roomId).emit("shell output", stdout);
-                }
-                else {
-                    fs.writeFile(inputFilePath, input, function (err) {
-                        if (err) {
-                            return console.log("File Write 2 err", err);
-                        }
-                        exec(localExec, function (error, stdout, stderr) {
+                //Compile Code file, OR Execute dexec which handles all of it.
+                exec(compileCommand, function (error, stdout, stderr) {
+                    if (stderr) {
+                        fs.unlink(codePath);
+                        fs.unlink(inputFilePath);
+                        console.error("Command 1 stderr", stderr);
+                        io.to(roomId).emit("shell output", stderr);
+                    }
+                    else if (error) {
+                        fs.unlink(codePath);
+                        fs.unlink(inputFilePath);
+                        console.error("Command 1 err", error);
+                        io.to(roomId).emit("shell output", "Compilation failed.\n");
+                    }
+                    //There would be an output if anything other than a clean gcc compile happened, even dexec execution.
+                    else if (stdout) {
+                        fs.unlink(codePath);
+                        fs.unlink(inputFilePath);
+                        console.log(roomId,stdout);
+                        io.to(roomId).emit("shell output", stdout);
+                    }
+                    //There won't be any output if there was a successful GCC compilation.
+                    else {
+                        exec(executionCommand, function (error, stdout, stderr) {
                             if (stderr) {
                                 console.error("Command 2 stderr", stderr);
                                 io.to(roomId).emit("shell output", stderr);
@@ -162,11 +191,20 @@ io.on('connection', function (socket) {
                                 console.log(stdout);
                                 io.to(roomId).emit("shell output", stdout);
                             }
+                            fs.unlink(inputFilePath);
+                            fs.unlink(codePath);
+                            fs.unlink(path_out);
                         });
-                    });
-                }
+                    }
+                });
             });
         });
+        console.log("Reply to room ",roomId);
+    });
+    socket.on("room change", function (newRoom) {
+        socket.leave("0");
+        socket.join(newRoom);
+        console.log('a user changed to room: ',newRoom);
     });
 });
 

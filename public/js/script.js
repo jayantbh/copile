@@ -17,6 +17,10 @@ function ready(fn) {
         editor.navigateLineEnd(); // Navigate to end of line
     });
     var socket = io();
+    socket.on("connect", function () {
+        socket.emit("room change",document.location.pathname.slice(1));
+        console.log("Connected");
+    });
     document.querySelector("#submit").onclick = function () {
         var code = editor.getValue(),
             args = document.querySelector("#args-list").value,
@@ -25,7 +29,8 @@ function ready(fn) {
         var codejson = {
             code:code,
             args:args,
-            input:input
+            input:input,
+            roomId:document.location.pathname.slice(1)
         };
         //console.log(code);
         document.querySelector("#submit").innerText = "Submitting...";
