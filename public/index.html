@@ -82,7 +82,7 @@
         session.setMode("ace/mode/c_cpp");
         // Create Firepad.
         var firepad = Firepad.fromACE(firepadRef, editor, {
-            defaultText: "#include \<stdio.h\>\nint main\(\)\{\n\t\n\treturn 0;\n}"
+            defaultText: "#include \<stdio.h\>\nint main\(\)\{\n\tprintf(\"Hello World!\");\n\treturn 0;\n}"
         });
         firepad.on('ready', function() {
             document.querySelector("#submit").innerText = "SUBMIT!";
