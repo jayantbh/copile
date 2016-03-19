@@ -42,7 +42,7 @@ app.post('/code', function (req, res) {
     //var code = JSON.parse(req.body);
     var code = decodeURIComponent(req.body.code);
     //console.log(req.body);
-    var dir = ".\\compiled";
+    var dir = "compiled";
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }
@@ -50,9 +50,9 @@ app.post('/code', function (req, res) {
     var filename = new Date().getTime();
     var filename_ext = filename + ".c";
     var filename_out = filename;
-    var path = ".\\compiled\\" + filename_ext;
-    var command = "gcc " + path + " -o .\\compiled\\" + filename_out;
-    var path_out = ".\\compiled\\" + filename_out;
+    var path = "compiled/" + filename_ext;
+    var command = "gcc " + path + " -o compiled/" + filename_out;
+    var path_out = "compiled/" + filename_out;
     var delete_command = "rm " + path;
     var delete_command_out = "rm " + path_out;
     fs.writeFile(path, code, function (err) {
@@ -101,7 +101,7 @@ io.on('connection', function (socket) {
     socket.join(roomId);
     socket.on('code submission', function (codejson) {
 
-        var dir = ".\\compiled";
+        var dir = "compiled";
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
         }
@@ -116,8 +116,8 @@ io.on('connection', function (socket) {
         var filename = new Date().getTime();
         var filename_ext = filename + ".c";
         var filename_out = filename;
-        var path = ".\\compiled\\" + filename_ext;
-        var path_out = ".\\compiled\\" + filename;
+        var path = "compiled/" + filename_ext;
+        var path_out = "compiled/" + filename;
         var inputFilePath = path_out + ".txt";
         var dexecCommand = "dexec -C " + path + " < " + inputFilePath;
         var localCommand = dexecCommand || "gcc " + path + " -std=c99 -o " + path_out;
