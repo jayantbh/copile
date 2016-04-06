@@ -1,6 +1,6 @@
 #CoPile
 
-A collaborative (not yet) code editor and online compiler.
+A collaborative code editor and online compiler.
 
 ToDo:  
   
