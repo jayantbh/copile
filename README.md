@@ -1,4 +1,4 @@
-#CoPile
+#Compile (formerly 'CoPile')
 
 A collaborative code editor and online compiler.
 
